@@ -30,13 +30,13 @@ func main() {
 	}
 
 	b.Handle("/count", func(m *tb.Message) {
-		b.Send(m.Sender, "3")
+		b.Send(m.Chat, "3")
 		time.Sleep(1 * time.Second)
-		b.Send(m.Sender, "2")
+		b.Send(m.Chat, "2")
 		time.Sleep(1 * time.Second)
-		b.Send(m.Sender, "1")
+		b.Send(m.Chat, "1")
 		time.Sleep(1 * time.Second)
-		b.Send(m.Sender, "Go!")
+		b.Send(m.Chat, "Go!")
 	})
 
 	b.Start()
