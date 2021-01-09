@@ -39,5 +39,31 @@ func main() {
 		b.Send(m.Chat, "Go!")
 	})
 
+	b.Handle("/playstation", func(m *tb.Message) {
+		b.Send(m.Chat, "P")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "L")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "A")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "Y")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "S")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "T")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "A")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "T")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "I")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "O")
+		time.Sleep(100 * time.Millisecond)
+		b.Send(m.Chat, "N")
+		time.Sleep(100 * time.Millisecond)
+
+	})
+
 	b.Start()
 }
