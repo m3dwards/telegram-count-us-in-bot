@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 	tb "gopkg.in/tucnak/telebot.v2"
+	"net/url"
 )
 
 func main() {
@@ -63,6 +64,14 @@ func main() {
 		b.Send(m.Chat, "N")
 		time.Sleep(150 * time.Millisecond)
 
+	})
+
+	b.Handle("/lama", func(m *tb.Message) {
+		u, err := url.Parse("https://pbs.twimg.com/profile_images/378800000802823295/fa4f4104d718899ea49f3a507c7f6034_400x400.jpeg")
+		if err != nil {
+			return
+		}
+		b.Send(m.Chat, u)
 	})
 
 	b.Start()
