@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"net/url"
 )
 
 func main() {
