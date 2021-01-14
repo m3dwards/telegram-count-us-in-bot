@@ -65,7 +65,7 @@ func main() {
 
 	})
 
-	b.Handle("/lama", func(m *tb.Message) {
+	b.Handle("/llama", func(m *tb.Message) {
 		a := &tb.Photo{File: tb.FromURL("https://pbs.twimg.com/profile_images/378800000802823295/fa4f4104d718899ea49f3a507c7f6034_400x400.jpeg")}
 		if err != nil {
 			return
@@ -73,8 +73,8 @@ func main() {
 		b.Send(m.Chat, a)
 	})
 
-	b.Handle("/randomlama", func(m *tb.Message) {
-		a := &tb.Photo{File: tb.FromURL("https://source.unsplash.com/800x600?lama")}
+	b.Handle("/randomllama", func(m *tb.Message) {
+		a := &tb.Photo{File: tb.FromURL("https://source.unsplash.com/800x600?llama")}
 		if err != nil {
 			return
 		}
