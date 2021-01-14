@@ -67,12 +67,22 @@ func main() {
 	})
 
 	b.Handle("/lama", func(m *tb.Message) {
-		u, err := url.Parse("https://pbs.twimg.com/profile_images/378800000802823295/fa4f4104d718899ea49f3a507c7f6034_400x400.jpeg")
+		a := &tb.Photo{File: tb.FromURL("https://pbs.twimg.com/profile_images/378800000802823295/fa4f4104d718899ea49f3a507c7f6034_400x400.jpeg")}
 		if err != nil {
 			return
 		}
-		b.Send(m.Chat, u)
+		b.Send(m.Chat, a)
 	})
 
 	b.Start()
 }
+
+b.Handle("/randomlama", func(m *tb.Message) {
+	a := &tb.Photo{File: tb.FromURL("https://source.unsplash.com/800x600?lama")}
+	if err != nil {
+		return
+	}
+	b.Send(m.Chat, a)
+})
+
+b.Start()
