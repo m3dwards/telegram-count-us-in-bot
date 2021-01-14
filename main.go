@@ -74,15 +74,13 @@ func main() {
 		b.Send(m.Chat, a)
 	})
 
+	b.Handle("/randomlama", func(m *tb.Message) {
+		a := &tb.Photo{File: tb.FromURL("https://source.unsplash.com/800x600?lama")}
+		if err != nil {
+			return
+		}
+		b.Send(m.Chat, a)
+	})
+
 	b.Start()
 }
-
-b.Handle("/randomlama", func(m *tb.Message) {
-	a := &tb.Photo{File: tb.FromURL("https://source.unsplash.com/800x600?lama")}
-	if err != nil {
-		return
-	}
-	b.Send(m.Chat, a)
-})
-
-b.Start()
