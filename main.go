@@ -31,8 +31,8 @@ func main() {
 
 	var (
 		// Universal markup builders.
-		menu     = &ReplyMarkup{ResizeReplyKeyboard: true}
-		selector = &ReplyMarkup{}
+		menu     = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+		selector = &tb.ReplyMarkup{}
 
 		// Reply buttons.
 		btnHelp     = menu.Text("ℹ Help")
@@ -46,8 +46,8 @@ func main() {
 		// Make sure Unique stays unique as per button kind,
 		// as it has to be for callback routing to work.
 		//
-		btnPrev = selector.Data("⬅", "prev", ...)
-		btnNext = selector.Data("➡", "next", ...)
+		btnPrev = selector.Data("⬅", "prev", "1")
+		btnNext = selector.Data("➡", "next", "1")
 	)
 
 	menu.Reply(
@@ -68,13 +68,13 @@ func main() {
 	})
 
 	// On reply button pressed (message)
-	b.Handle(&btnHelp, func(m *tb.Message) {...})
+	b.Handle(&btnHelp, func(m *tb.Message) {})
 
 	// On inline button pressed (callback)
 	b.Handle(&btnPrev, func(c *tb.Callback) {
 		// ...
 		// Always respond!
-		b.Respond(c, &tb.CallbackResponse{...})
+		b.Respond(c, &tb.CallbackResponse{})
 	})
 
 	b.Handle("/count", func(m *tb.Message) {
