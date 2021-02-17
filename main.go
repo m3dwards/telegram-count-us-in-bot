@@ -80,7 +80,9 @@ func main() {
 	})
 
 	b.Handle("/chat", func(m *tb.Message) {
-		b.Send(m.Chat, "Please specify film or show name:", replychat)
+		replyChat := &tb.ReplyMarkup{}
+		replyChat.QueryChat("text", "query")
+		b.Send(m.Chat, "Please specify film or show name:", replyChat)
 	})
 	b.Handle(&replyquery, func(m *tb.Message) {
 		b.Send(m.Chat, "replied to query")
