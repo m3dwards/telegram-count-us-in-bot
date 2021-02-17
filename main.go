@@ -60,7 +60,7 @@ func main() {
 
 	// Command: /start <PAYLOAD>
 	b.Handle("/start", func(m *tb.Message) {
-		b.Send(m.Chat, "Hello!", selector)
+		b.Send(m.Chat, "Hello!" + m.Text, selector)
 
 		// if !m.Private() {
 		// 	return
