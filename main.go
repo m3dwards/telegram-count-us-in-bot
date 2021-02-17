@@ -60,7 +60,6 @@ func main() {
 	)
 
 	replyquery := (&tb.ReplyMarkup{ForceReply: true}).Query("text", "query")
-	replychat := (&tb.ReplyMarkup{ForceReply: true}).QueryChat("text", "query")
 
 	// Command: /start <PAYLOAD>
 	b.Handle("/start", func(m *tb.Message) {
@@ -79,16 +78,17 @@ func main() {
 		// b.Send(m.Sender, "Hello!", menu)
 	})
 
+	inline := &tb.ReplyMarkup{}
+	replyChat := inline.QueryChat("text", "query")
+	inline.Inline(inline.Row(replyChat))
 	b.Handle("/chat", func(m *tb.Message) {
-		replyChat := &tb.ReplyMarkup{}
-		replyChat.QueryChat("text", "query")
-		b.Send(m.Chat, "Please specify film or show name:", replyChat)
+		b.Send(m.Chat, "Please specify film or show name:", inline)
 	})
 	b.Handle(&replyquery, func(m *tb.Message) {
 		b.Send(m.Chat, "replied to query")
 	})
 
-	b.Handle(&replychat, func(m *tb.Message) {
+	b.Handle(&replyChat, func(m *tb.Message) {
 		b.Send(m.Chat, "replied to chat")
 	})
 
