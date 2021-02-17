@@ -76,7 +76,13 @@ func main() {
 	b.Handle(&btnPrev, func(c *tb.Callback) {
 		// ...
 		// Always respond!
-		b.Respond(c, &tb.CallbackResponse{})
+		b.Respond(c, &tb.CallbackResponse{Text: "Previous"})
+	})
+
+	b.Handle(&btnNext, func(c *tb.Callback) {
+		// ...
+		// Always respond!
+		b.Respond(c, &tb.CallbackResponse{Text: "Next"})
 	})
 
 	b.Handle("/count", func(m *tb.Message) {
