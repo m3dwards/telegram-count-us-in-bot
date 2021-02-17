@@ -60,6 +60,8 @@ func main() {
 
 	// Command: /start <PAYLOAD>
 	b.Handle("/start", func(m *tb.Message) {
+		b.Send(m.Sender, "Hello!", menu)
+
 		if !m.Private() {
 			return
 		}
