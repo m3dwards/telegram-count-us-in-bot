@@ -79,7 +79,7 @@ func main() {
 	})
 
 	inline := &tb.ReplyMarkup{}
-	replyChat := inline.QueryChat("text", "query")
+	replyChat := inline.Query("text", "query")
 	inline.Inline(inline.Row(replyChat))
 	b.Handle("/chat", func(m *tb.Message) {
 		b.Send(m.Chat, "Please specify film or show name:", inline)
