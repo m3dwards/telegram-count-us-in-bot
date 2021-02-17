@@ -29,6 +29,54 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var (
+		// Universal markup builders.
+		menu     = &ReplyMarkup{ResizeReplyKeyboard: true}
+		selector = &ReplyMarkup{}
+
+		// Reply buttons.
+		btnHelp     = menu.Text("ℹ Help")
+		btnSettings = menu.Text("⚙ Settings")
+
+		// Inline buttons.
+		//
+		// Pressing it will cause the client to
+		// send the bot a callback.
+		//
+		// Make sure Unique stays unique as per button kind,
+		// as it has to be for callback routing to work.
+		//
+		btnPrev = selector.Data("⬅", "prev", ...)
+		btnNext = selector.Data("➡", "next", ...)
+	)
+
+	menu.Reply(
+		menu.Row(btnHelp),
+		menu.Row(btnSettings),
+	)
+	selector.Inline(
+		selector.Row(btnPrev, btnNext),
+	)
+
+	// Command: /start <PAYLOAD>
+	b.Handle("/start", func(m *tb.Message) {
+		if !m.Private() {
+			return
+		}
+
+		b.Send(m.Sender, "Hello!", menu)
+	})
+
+	// On reply button pressed (message)
+	b.Handle(&btnHelp, func(m *tb.Message) {...})
+
+	// On inline button pressed (callback)
+	b.Handle(&btnPrev, func(c *tb.Callback) {
+		// ...
+		// Always respond!
+		b.Respond(c, &tb.CallbackResponse{...})
+	})
+
 	b.Handle("/count", func(m *tb.Message) {
 		b.Send(m.Chat, "3")
 		time.Sleep(1 * time.Second)
@@ -62,7 +110,6 @@ func main() {
 		time.Sleep(150 * time.Millisecond)
 		b.Send(m.Chat, "N")
 		time.Sleep(150 * time.Millisecond)
-
 	})
 
 	b.Handle("/llama", func(m *tb.Message) {
