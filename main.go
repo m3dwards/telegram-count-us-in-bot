@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"strings"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -60,7 +61,13 @@ func main() {
 
 	// Command: /start <PAYLOAD>
 	b.Handle("/start", func(m *tb.Message) {
-		b.Send(m.Chat, "Hello!" + m.Text, selector)
+		filmName := m.Text[6:]
+		filmName = strings.TrimSpace(filmName)
+		if (len(filmName) == 0) {
+			b.Send(m.Chat, "Please specify film or show name:", &tb.ReplyMarkup{ForceReply: true})
+			return
+		}
+		b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
 
 		// if !m.Private() {
 		// 	return
