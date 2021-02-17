@@ -60,13 +60,13 @@ func main() {
 
 	// Command: /start <PAYLOAD>
 	b.Handle("/start", func(m *tb.Message) {
-		b.Send(m.Sender, "Hello!", menu)
+		b.Send(m.Chat, "Hello!", selector)
 
-		if !m.Private() {
-			return
-		}
+		// if !m.Private() {
+		// 	return
+		// }
 
-		b.Send(m.Sender, "Hello!", menu)
+		// b.Send(m.Sender, "Hello!", menu)
 	})
 
 	// On reply button pressed (message)
