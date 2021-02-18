@@ -95,7 +95,7 @@ func main() {
 		filmName := m.Text[6:]
 		filmName = strings.TrimSpace(filmName)
 		if len(filmName) == 0 {
-			rep, _ := b.Send(m.Chat, "Please specify film or show name:", replyquery)
+			rep, _ := b.Send(m.Chat, m.Sender.Username + " enter the film or show name:", replyquery)
 			addNewReplyId(m.Chat.ID, rep.ID)
 			return
 		}
