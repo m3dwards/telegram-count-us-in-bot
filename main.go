@@ -229,7 +229,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int,
 	InOrOut := &tb.ReplyMarkup{}
 	btnIn := InOrOut.Data("I'm in!", "in", wpID)
 	btnOut := InOrOut.Data("I'm not in", "out", wpID)
-	btnInitiate := InOrOut.Data("Attendance check complete \n Start countdown", "ready", wpID)
+	btnInitiate := InOrOut.Data("Start countdown!", "ready", wpID)
 	InOrOut.Inline(InOrOut.Row(btnIn, btnOut), InOrOut.Row(btnInitiate))
 
 	m, _ := b.Send(chat, "Nobody is in", InOrOut)
@@ -243,17 +243,27 @@ func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int,
 		b.Edit(m, "Nobody is in", InOrOut)
 	})
 
-	// readyNotReady := &tb.ReplyMarkup{}
-	// btnReady := InOrOut.Data("Paused and Ready!", "ready", wpID)
-	// btnNotReady := InOrOut.Data("Not ready!", "notready", wpID)
-	// readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
+	b.Handle(&btnInitiate, func(c *tb.Callback) {
+		b.Respond(c, &tb.CallbackResponse{Text: "Initiating countdown"})
 
-	// b.Handle(&btnReady, func(c *tb.Callback) {
-	// 	b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
-	// })
-	// b.Handle(&btnNotReady, func(c *tb.Callback) {
-	// 	b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
-	// })
+		readyNotReady := &tb.ReplyMarkup{}
+		btnReady := InOrOut.Data("Paused and Ready!", "ready", wpID)
+		btnNotReady := InOrOut.Data("Not ready!", "notready", wpID)
+		readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
 
-	// b.Send(chat, "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds. \n\n Not Ready: \n\n Ready: \n Max", readyNotReady)
+		m, _ := b.Send(chat, getReadyMsg, readyNotReady)
+
+		b.Handle(&btnReady, func(c *tb.Callback) {
+			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
+			b.Edit(m, getReadyMsg, InOrOut)
+		})
+		b.Handle(&btnNotReady, func(c *tb.Callback) {
+			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
+			b.Edit(m, "Nobody is ready", InOrOut)
+		})
+	})
+}
+
+func getReadyMsg() string {
+	return  "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds. \n\n Not Ready: \n\n Ready: \n Max"
 }
