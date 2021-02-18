@@ -100,32 +100,18 @@ func main() {
 			return
 		}
 		b.Send(m.Chat, "OK! Setting us up to watch "+filmName)
-
-		wpID := createNewWatchParty(filmName, m.Chat.ID, m.Sender.ID)
-
-		InOrOut := &tb.ReplyMarkup{}
-		btnIn := InOrOut.Data("I'm in!", "in", wpID)
-		btnOut := InOrOut.Data("I'm not in", "out", wpID)
-		InOrOut.Inline(InOrOut.Row(btnIn, btnOut))
-
-		b.Handle(&btnIn, func(c *tb.Callback) {
-			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
-		})
-		b.Handle(&btnOut, func(c *tb.Callback) {
-			b.Respond(c, &tb.CallbackResponse{Text: c.Data})
-		})
-		b.Send(m.Chat, "Who's in?")
-
+		handleNewWatchParty(b, filmName, m.Chat.ID, m.Sender.ID, m.Chat)
 	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		if m.ReplyTo != nil && checkReplyIDExists(m.Chat.ID, m.ReplyTo.ID) {
 			deleteReplyID(m.Chat.ID, m.ReplyTo.ID)
-		  filmName := strings.TrimSpace(m.Text)
-		  if (len(filmName) == 0) {
-			  return
-		  }
-		  b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
+			filmName := strings.TrimSpace(m.Text)
+			if (len(filmName) == 0) {
+				return
+			}
+			b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
+			handleNewWatchParty(b, filmName, m.Chat.ID, m.Sender.ID, m.Chat)
 		}
 	})
 
@@ -236,4 +222,21 @@ func createNewWatchParty(name string, chatID int64, ownerID int) string {
 	wp := &watchParty{ID: id, Name: name, ChatID: chatID, OwnerID: ownerID}
 	data = append(data, wp)
 	return id
+}
+
+func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int, chat *tb.Chat) {
+	wpID := createNewWatchParty(filmName, chatId, senderID)
+
+	InOrOut := &tb.ReplyMarkup{}
+	btnIn := InOrOut.Data("I'm in!", "in", wpID)
+	btnOut := InOrOut.Data("I'm not in", "out", wpID)
+	InOrOut.Inline(InOrOut.Row(btnIn, btnOut))
+
+	b.Handle(&btnIn, func(c *tb.Callback) {
+		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
+	})
+	b.Handle(&btnOut, func(c *tb.Callback) {
+		b.Respond(c, &tb.CallbackResponse{Text: c.Data})
+	})
+	b.Send(chat, "Who's in?", InOrOut)
 }
