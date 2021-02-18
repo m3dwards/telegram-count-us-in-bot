@@ -239,4 +239,18 @@ func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int,
 		b.Respond(c, &tb.CallbackResponse{Text: c.Data})
 	})
 	b.Send(chat, "Who's in?", InOrOut)
+
+	readyNotReady := &tb.ReplyMarkup{}
+	btnReady := InOrOut.Data("Paused and Ready!", "ready", wpID)
+	btnNotReady := InOrOut.Data("Not ready!", "notready", wpID)
+	readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
+
+	b.Handle(&btnReady, func(c *tb.Callback) {
+		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
+	})
+	b.Handle(&btnNotReady, func(c *tb.Callback) {
+		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
+	})
+
+	b.Send(chat, "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds. \n\n Not Ready: \n\n Ready: \n Max", btnNotReady)
 }
