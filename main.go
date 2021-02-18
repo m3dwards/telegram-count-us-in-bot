@@ -59,14 +59,15 @@ func main() {
 		selector.Row(btnPrev, btnNext),
 	)
 
-	replyquery := (&tb.ReplyMarkup{ForceReply: true}).Query("text", "query")
+	replyquery := &tb.ReplyMarkup{ForceReply: true}
 
 	// Command: /start <PAYLOAD>
 	b.Handle("/start", func(m *tb.Message) {
 		filmName := m.Text[6:]
 		filmName = strings.TrimSpace(filmName)
 		if (len(filmName) == 0) {
-			b.Send(m.Chat, "Please specify film or show name:", replyquery)
+			rep, _ := b.Send(m.Chat, "Please specify film or show name:", replyquery)
+			b.Send(m.Chat, rep.ID)
 			return
 		}
 		b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
@@ -93,7 +94,13 @@ func main() {
 	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
-		b.Send(m.Chat, "3")
+		filmName := strings.TrimSpace(m.Text)
+		if (len(filmName) == 0) {
+			return
+		}
+		b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
+		b.Send(m.Chat, m.IsReply())
+		b.Send(m.Chat, m.ReplyTo.ID)
 	})
 
 	// On reply button pressed (message)
