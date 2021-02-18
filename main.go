@@ -237,11 +237,11 @@ func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int,
 
 	b.Handle(&btnIn, func(c *tb.Callback) {
 		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
-		b.Edit(m, "The following are in: \n\n Max")
+		b.Edit(m, "The following are in: \n\n Max", InOrOut)
 	})
 	b.Handle(&btnOut, func(c *tb.Callback) {
 		b.Respond(c, &tb.CallbackResponse{Text: c.Data})
-		b.Edit(m, "Nobody is in")
+		b.Edit(m, "Nobody is in", InOrOut)
 	})
 
 	// readyNotReady := &tb.ReplyMarkup{}
