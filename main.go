@@ -89,7 +89,7 @@ func main() {
 		selector.Row(btnPrev, btnNext),
 	)
 
-	replyquery := &tb.ReplyMarkup{ForceReply: true}
+	replyquery := &tb.ReplyMarkup{ForceReply: true, Selective: true}
 
 	b.Handle("/start", func(m *tb.Message) {
 		filmName := m.Text[6:]
@@ -99,7 +99,6 @@ func main() {
 			addNewReplyId(m.Chat.ID, rep.ID)
 			return
 		}
-		b.Send(m.Chat, "OK! Setting us up to watch "+filmName)
 		handleNewWatchParty(b, filmName, m.Chat.ID, m.Sender.ID, m.Chat)
 	})
 
@@ -110,7 +109,6 @@ func main() {
 			if (len(filmName) == 0) {
 				return
 			}
-			b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
 			handleNewWatchParty(b, filmName, m.Chat.ID, m.Sender.ID, m.Chat)
 		}
 	})
@@ -225,6 +223,7 @@ func createNewWatchParty(name string, chatID int64, ownerID int) string {
 }
 
 func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int, chat *tb.Chat) {
+	b.Send(chat, "Who would like to watch " + filmName + "?")
 	wpID := createNewWatchParty(filmName, chatId, senderID)
 
 	InOrOut := &tb.ReplyMarkup{}
