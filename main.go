@@ -230,27 +230,31 @@ func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int,
 	InOrOut := &tb.ReplyMarkup{}
 	btnIn := InOrOut.Data("I'm in!", "in", wpID)
 	btnOut := InOrOut.Data("I'm not in", "out", wpID)
-	InOrOut.Inline(InOrOut.Row(btnIn, btnOut))
+	btnInitiate := InOrOut.Data("Everyone is ready", "ready", wpID)
+	InOrOut.Inline(InOrOut.Row(btnIn, btnOut), InOrOut.Row(btnInitiate))
+
+	m, _ := b.Send(chat, "Nobody is in", InOrOut)
 
 	b.Handle(&btnIn, func(c *tb.Callback) {
 		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
+		b.Edit(m, "The following are in: \n\n Max")
 	})
 	b.Handle(&btnOut, func(c *tb.Callback) {
 		b.Respond(c, &tb.CallbackResponse{Text: c.Data})
-	})
-	b.Send(chat, "Who's in?", InOrOut)
-
-	readyNotReady := &tb.ReplyMarkup{}
-	btnReady := InOrOut.Data("Paused and Ready!", "ready", wpID)
-	btnNotReady := InOrOut.Data("Not ready!", "notready", wpID)
-	readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
-
-	b.Handle(&btnReady, func(c *tb.Callback) {
-		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
-	})
-	b.Handle(&btnNotReady, func(c *tb.Callback) {
-		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
+		b.Edit(m, "Nobody is in")
 	})
 
-	b.Send(chat, "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds. \n\n Not Ready: \n\n Ready: \n Max", readyNotReady)
+	// readyNotReady := &tb.ReplyMarkup{}
+	// btnReady := InOrOut.Data("Paused and Ready!", "ready", wpID)
+	// btnNotReady := InOrOut.Data("Not ready!", "notready", wpID)
+	// readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
+
+	// b.Handle(&btnReady, func(c *tb.Callback) {
+	// 	b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
+	// })
+	// b.Handle(&btnNotReady, func(c *tb.Callback) {
+	// 	b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
+	// })
+
+	// b.Send(chat, "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds. \n\n Not Ready: \n\n Ready: \n Max", readyNotReady)
 }
