@@ -22,7 +22,7 @@ type watchParty struct {
 	Name        string
 	Viewers     []viewer
 	Step        string
-	ChatID      int
+	ChatID      int64
 	OwnerID     int
 	ReadyMsgID  int
 	PausedMsgID int
@@ -80,6 +80,7 @@ func main() {
 		btnNext = selector.Data("➡", "next", "1")
 	)
 
+
 	menu.Reply(
 		menu.Row(btnHelp),
 		menu.Row(btnSettings),
@@ -99,6 +100,22 @@ func main() {
 			return
 		}
 		b.Send(m.Chat, "OK! Setting us up to watch "+filmName)
+
+		wpID := createNewWatchParty(filmName, m.Chat.ID, m.Sender.ID)
+
+		InOrOut := &tb.ReplyMarkup{}
+		btnIn := InOrOut.Data("I'm in!", "in", wpID)
+		btnOut := InOrOut.Data("I'm not in", "out", wpID)
+		InOrOut.Inline(InOrOut.Row(btnIn, btnOut))
+
+		b.Handle(&btnIn, func(c *tb.Callback) {
+			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
+		})
+		b.Handle(&btnOut, func(c *tb.Callback) {
+			b.Respond(c, &tb.CallbackResponse{Text: c.Data})
+		})
+		b.Send(m.Chat, "Who's in?", InOrOut)
+
 	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
@@ -214,7 +231,7 @@ func getWatchPartyByID(ID string) *watchParty {
 	return nil
 }
 
-func createNewWatchParty(name string, chatID int, ownerID int) string {
+func createNewWatchParty(name string, chatID int64, ownerID int) string {
 	id := uuid.New()
 	wp := &watchParty{ID: id, Name: name, ChatID: chatID, OwnerID: ownerID}
 	data = append(data, wp)
