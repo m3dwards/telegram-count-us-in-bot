@@ -79,20 +79,6 @@ func main() {
 		// b.Send(m.Sender, "Hello!", menu)
 	})
 
-	inline := &tb.ReplyMarkup{}
-	replyChat := inline.Query("text", "query")
-	inline.Inline(inline.Row(replyChat))
-	b.Handle("/chat", func(m *tb.Message) {
-		b.Send(m.Chat, "Please specify film or show name:", inline)
-	})
-	b.Handle(&replyquery, func(m *tb.Message) {
-		b.Send(m.Chat, "replied to query")
-	})
-
-	b.Handle(&replyChat, func(m *tb.Message) {
-		b.Send(m.Chat, "replied to chat")
-	})
-
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		filmName := strings.TrimSpace(m.Text)
 		if (len(filmName) == 0) {
