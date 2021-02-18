@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 	"strings"
-	"strconv"
+	// "strconv"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -80,15 +80,15 @@ func main() {
 		// b.Send(m.Sender, "Hello!", menu)
 	})
 
-	b.Handle(tb.OnText, func(m *tb.Message) {
-		filmName := strings.TrimSpace(m.Text)
-		if (len(filmName) == 0) {
-			return
-		}
-		b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
-		b.Send(m.Chat, strconv.FormatBool(m.IsReply()))
-		b.Send(m.Chat, strconv.Itoa(m.ReplyTo.ID))
-	})
+	// b.Handle(tb.OnText, func(m *tb.Message) {
+	// 	filmName := strings.TrimSpace(m.Text)
+	// 	if (len(filmName) == 0) {
+	// 		return
+	// 	}
+	// 	b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
+	// 	b.Send(m.Chat, strconv.FormatBool(m.IsReply()))
+	// 	b.Send(m.Chat, strconv.Itoa(m.ReplyTo.ID))
+	// })
 
 	// On reply button pressed (message)
 	b.Handle(&btnHelp, func(m *tb.Message) {})
