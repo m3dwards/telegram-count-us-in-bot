@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 	"strings"
+	"strconv"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -67,7 +68,7 @@ func main() {
 		filmName = strings.TrimSpace(filmName)
 		if (len(filmName) == 0) {
 			rep, _ := b.Send(m.Chat, "Please specify film or show name:", replyquery)
-			b.Send(m.Chat, rep.ID)
+			log.Println(rep.ID)
 			return
 		}
 		b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
@@ -85,8 +86,8 @@ func main() {
 			return
 		}
 		b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
-		b.Send(m.Chat, m.IsReply())
-		b.Send(m.Chat, m.ReplyTo.ID)
+		b.Send(m.Chat, strconv.FormatBool(m.IsReply()))
+		b.Send(m.Chat, strconv.Itoa(m.ReplyTo.ID))
 	})
 
 	// On reply button pressed (message)
