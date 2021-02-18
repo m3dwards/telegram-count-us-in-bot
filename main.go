@@ -114,7 +114,7 @@ func main() {
 		b.Handle(&btnOut, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: c.Data})
 		})
-		b.Send(m.Chat, "Who's in?", InOrOut)
+		b.Send(m.Chat, "Who's in?")
 
 	})
 
