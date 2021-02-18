@@ -3,13 +3,41 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 	"strings"
+	"time"
 	// "strconv"
+	"github.com/pborman/uuid"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+type viewer struct {
+	Name     string
+	Username string
+	Ready    bool
+	Paused   bool
+}
+
+type watchParty struct {
+	ID          string
+	Name        string
+	Viewers     []viewer
+	Step        string
+	ChatID      int
+	OwnerID     int
+	ReadyMsgID  int
+	PausedMsgID int
+}
+
+type replyID struct {
+	ChatID int64
+	MsgID int
+}
+
+var data []*watchParty
+var replyIDs []*replyID
+
 func main() {
+
 	var (
 		port      = os.Getenv("PORT")
 		publicURL = os.Getenv("PUBLIC_URL") // you must add it to your config vars
@@ -62,33 +90,27 @@ func main() {
 
 	replyquery := &tb.ReplyMarkup{ForceReply: true}
 
-	// Command: /start <PAYLOAD>
 	b.Handle("/start", func(m *tb.Message) {
 		filmName := m.Text[6:]
 		filmName = strings.TrimSpace(filmName)
-		if (len(filmName) == 0) {
+		if len(filmName) == 0 {
 			rep, _ := b.Send(m.Chat, "Please specify film or show name:", replyquery)
-			log.Println(rep.ID)
+			addNewReplyId(m.Chat.ID, rep.ID)
 			return
 		}
-		b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
-
-		// if !m.Private() {
-		// 	return
-		// }
-
-		// b.Send(m.Sender, "Hello!", menu)
+		b.Send(m.Chat, "OK! Setting us up to watch "+filmName)
 	})
 
-	// b.Handle(tb.OnText, func(m *tb.Message) {
-	// 	filmName := strings.TrimSpace(m.Text)
-	// 	if (len(filmName) == 0) {
-	// 		return
-	// 	}
-	// 	b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
-	// 	b.Send(m.Chat, strconv.FormatBool(m.IsReply()))
-	// 	b.Send(m.Chat, strconv.Itoa(m.ReplyTo.ID))
-	// })
+	b.Handle(tb.OnText, func(m *tb.Message) {
+		if m.ReplyTo != nil && checkReplyIDExists(m.Chat.ID, m.ReplyTo.ID) {
+			deleteReplyID(m.Chat.ID, m.ReplyTo.ID)
+		  filmName := strings.TrimSpace(m.Text)
+		  if (len(filmName) == 0) {
+			  return
+		  }
+		  b.Send(m.Chat, "OK! Setting us up to watch " + filmName)
+		}
+	})
 
 	// On reply button pressed (message)
 	b.Handle(&btnHelp, func(m *tb.Message) {})
@@ -158,4 +180,43 @@ func main() {
 	})
 
 	b.Start()
+}
+
+func addNewReplyId(chatID int64, msgID int) {
+	replyIDs = append(replyIDs, &replyID{ChatID: chatID, MsgID: msgID})
+}
+
+func checkReplyIDExists(chatID int64, msgID int) bool {
+	for _, r := range replyIDs {
+		if chatID == r.ChatID && msgID == r.MsgID {
+			return true
+		}
+	}
+	return false
+}
+
+func deleteReplyID(chatID int64, msgID int) bool {
+	for i, r := range replyIDs {
+		if chatID == r.ChatID && msgID == r.MsgID {
+			replyIDs = append(replyIDs[:i], replyIDs[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
+func getWatchPartyByID(ID string) *watchParty {
+	for _, wp := range data {
+		if ID == wp.ID {
+			return wp
+		}
+	}
+	return nil
+}
+
+func createNewWatchParty(name string, chatID int, ownerID int) string {
+	id := uuid.New()
+	wp := &watchParty{ID: id, Name: name, ChatID: chatID, OwnerID: ownerID}
+	data = append(data, wp)
+	return id
 }
