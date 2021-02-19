@@ -223,7 +223,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 	InOrOut := &tb.ReplyMarkup{}
 	btnIn := InOrOut.Data("I'm in ✅", "in", wpID)
 	btnOut := InOrOut.Data("I'm not in ❌", "out", wpID)
-	btnInitiate := InOrOut.Data("Start countdown!", "initiate", wpID)
+	btnInitiate := InOrOut.Data("Start countdown ▶️", "initiate", wpID)
 	InOrOut.Inline(InOrOut.Row(btnIn, btnOut), InOrOut.Row(btnInitiate))
 
 	m, _ := b.Send(chat, "Nobody is in", InOrOut)
@@ -245,7 +245,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 		b.Respond(c, &tb.CallbackResponse{Text: "Initiating countdown"})
 
 		readyNotReady := &tb.ReplyMarkup{}
-		btnReady := readyNotReady.Data("Paused and Ready 🎬", "ready", wpID)
+		btnReady := readyNotReady.Data("Ready 🎬", "ready", wpID)
 		btnNotReady := readyNotReady.Data("Not ready ❌", "notready", wpID)
 		readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
 
