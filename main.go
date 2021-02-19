@@ -300,7 +300,7 @@ func getReadyMsg(wpID string) string {
 		}
 		notReadyViewers = notReadyViewers + getViewerName(v) + "\n"
 	}
-	return m + "\n\nNot Ready:\n\n" + notReadyViewers + "\n\nReady:\n\n" + readyViewers
+	return m + "\n\nNot Ready:\n\n" + notReadyViewers + "\nReady:\n\n" + readyViewers
 }
 
 func setViewerStatus(wpID string, vID int, ready bool) {
