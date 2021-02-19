@@ -87,7 +87,7 @@ func main() {
 
 	replyquery := &tb.ReplyMarkup{ForceReply: true, Selective: true}
 
-	b.Handle("/start", func(m *tb.Message) {
+	b.Handle("/watch", func(m *tb.Message) {
 		filmName := m.Text[6:]
 		filmName = strings.TrimSpace(filmName)
 		if len(filmName) == 0 {
