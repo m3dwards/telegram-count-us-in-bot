@@ -15,18 +15,13 @@ type viewer struct {
 	Username string
 	ID       int
 	Ready    bool
-	Paused   bool
 }
 
 type watchParty struct {
-	ID          string
-	Name        string
-	Viewers     []*viewer
-	Step        string
-	ChatID      int64
-	OwnerID     int
-	ReadyMsgID  int
-	PausedMsgID int
+	ID      string
+	Name    string
+	Viewers []*viewer
+	OwnerID int
 }
 
 type replyID struct {
@@ -99,7 +94,7 @@ func main() {
 			addNewReplyId(m.Chat.ID, rep.ID)
 			return
 		}
-		handleNewWatchParty(b, filmName, m.Chat.ID, m.Sender.ID, m.Chat)
+		handleNewWatchParty(b, filmName, m.Sender.ID, m.Chat)
 	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
@@ -109,7 +104,7 @@ func main() {
 			if len(filmName) == 0 {
 				return
 			}
-			handleNewWatchParty(b, filmName, m.Chat.ID, m.Sender.ID, m.Chat)
+			handleNewWatchParty(b, filmName, m.Sender.ID, m.Chat)
 		}
 	})
 
@@ -213,16 +208,16 @@ func getWatchPartyByID(ID string) *watchParty {
 	return nil
 }
 
-func createNewWatchParty(name string, chatID int64, ownerID int) string {
+func createNewWatchParty(name string, ownerID int) string {
 	id := uuid.New()
-	wp := &watchParty{ID: id, Name: name, ChatID: chatID, OwnerID: ownerID}
+	wp := &watchParty{ID: id, Name: name, OwnerID: ownerID}
 	data = append(data, wp)
 	return id
 }
 
-func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int, chat *tb.Chat) {
+func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat) {
 	b.Send(chat, "Who would like to watch "+filmName+"?")
-	wpID := createNewWatchParty(filmName, chatId, senderID)
+	wpID := createNewWatchParty(filmName, senderID)
 
 	InOrOut := &tb.ReplyMarkup{}
 	btnIn := InOrOut.Data("I'm in!", "in", wpID)
@@ -257,13 +252,22 @@ func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int,
 
 		b.Handle(&btnReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
-			b.Edit(mr, getReadyMsg(), readyNotReady)
+			setViewerStatus(c.Data, c.Sender.ID, true)
+			b.Edit(mr, getReadyMsg(c.Data), readyNotReady)
 		})
 		b.Handle(&btnNotReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
-			b.Edit(mr, "Nobody is ready", readyNotReady)
+			setViewerStatus(c.Data, c.Sender.ID, true)
+			b.Edit(mr, getReadyMsg(c.Data), readyNotReady)
 		})
 	})
+}
+
+func getViewerName(v *viewer) string {
+	if len(v.Name) > 0 {
+		return v.Name
+	}
+	return "@" + v.Username
 }
 
 func getInOutMsg(wp *watchParty) string {
@@ -281,8 +285,31 @@ func getInOutMsg(wp *watchParty) string {
 	return "The following are in: \n\n" + viewers
 }
 
-func getReadyMsg() string {
-	return "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds. \n\n Not Ready: \n\n Ready: \n Max"
+func getReadyMsg(wpID string) string {
+	m := "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds."
+	wp := getWatchPartyByID(wpID)
+	if len(wp.Viewers) == 0 {
+		return m
+	}
+	readyViewers := ""
+	notReadyViewers := ""
+	for _, v := range wp.Viewers {
+		if v.Ready {
+			readyViewers = readyViewers + getViewerName(v) + "\n"
+			continue
+		}
+		notReadyViewers = notReadyViewers + getViewerName(v) + "\n"
+	}
+	return m + "\n\nNot Ready:\n\n" + notReadyViewers + "\n\nReady:\n\n" + readyViewers
+}
+
+func setViewerStatus(wpID string, vID int, ready bool) {
+	wp := getWatchPartyByID(wpID)
+	for _, vw := range wp.Viewers {
+		if vID == vw.ID {
+			vw.Ready = ready
+		}
+	}
 }
 
 func addPersonToWP(wp *watchParty, name string, username string, id int) {
