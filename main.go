@@ -248,7 +248,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 		btnNotReady := readyNotReady.Data("Not ready!", "notready", wpID)
 		readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
 
-		mr, _ := b.Send(chat, "Nobody is ready", readyNotReady)
+		mr, _ := b.Send(chat, getReadyMsg(wpID), readyNotReady)
 
 		b.Handle(&btnReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
