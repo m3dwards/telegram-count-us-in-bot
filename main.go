@@ -257,7 +257,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 		})
 		b.Handle(&btnNotReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
-			setViewerStatus(c.Data, c.Sender.ID, true)
+			setViewerStatus(c.Data, c.Sender.ID, false)
 			b.Edit(mr, getReadyMsg(c.Data), readyNotReady)
 		})
 	})
