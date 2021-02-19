@@ -15,6 +15,7 @@ type viewer struct {
 	Username string
 	ID       int
 	Ready    bool
+	Timer *time.Timer
 }
 
 type watchParty struct {
@@ -252,13 +253,11 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 
 		b.Handle(&btnReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
-			setViewerStatus(c.Data, c.Sender.ID, true)
-			b.Edit(mr, getReadyMsg(c.Data), readyNotReady)
+			setViewerStatus(c.Data, c.Sender.ID, true, mr, b, readyNotReady)
 		})
 		b.Handle(&btnNotReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
-			setViewerStatus(c.Data, c.Sender.ID, false)
-			b.Edit(mr, getReadyMsg(c.Data), readyNotReady)
+			setViewerStatus(c.Data, c.Sender.ID, false, mr, b, readyNotReady)
 		})
 	})
 }
@@ -286,7 +285,7 @@ func getInOutMsg(wp *watchParty) string {
 }
 
 func getReadyMsg(wpID string) string {
-	m := "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds."
+	m := "Pause at 3 seconds\nReady status will last for 15 seconds."
 	wp := getWatchPartyByID(wpID)
 	if len(wp.Viewers) == 0 {
 		return m
@@ -303,13 +302,25 @@ func getReadyMsg(wpID string) string {
 	return m + "\n\nNot Ready:\n\n" + notReadyViewers + "\nReady:\n\n" + readyViewers
 }
 
-func setViewerStatus(wpID string, vID int, ready bool) {
+func setViewerStatus(wpID string, vID int, ready bool, m *tb.Message, b *tb.Bot, readyNotReady *tb.ReplyMarkup) {
 	wp := getWatchPartyByID(wpID)
 	for _, vw := range wp.Viewers {
 		if vID == vw.ID {
 			vw.Ready = ready
+			if ready {
+				vw.Timer = revertViewerStatusAfter15Seconds(wpID, vID, m, b, readyNotReady)
+			}
+			vw.Timer.Stop()
 		}
 	}
+	b.Edit(m, getReadyMsg(wpID), readyNotReady)
+}
+
+func revertViewerStatusAfter15Seconds(wpID string, vID int, m *tb.Message, b *tb.Bot, readyNotReady *tb.ReplyMarkup) *time.Timer {
+	timer := time.AfterFunc(time.Second * 15, func() {
+		setViewerStatus(wpID, vID, false, m, b, readyNotReady)
+	})
+	return timer
 }
 
 func addPersonToWP(wp *watchParty, name string, username string, id int) {
