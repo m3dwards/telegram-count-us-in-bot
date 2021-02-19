@@ -254,12 +254,33 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 		b.Handle(&btnReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
 			setViewerStatus(c.Data, c.Sender.ID, true, mr, b, readyNotReady)
+			if checkIfWeAreAGo(c.Data) {
+				b.Send(m.Chat, "Looks like we are all ready! Starting timer.")
+				time.Sleep(2 * time.Second)
+				b.Send(m.Chat, "3")
+				time.Sleep(1 * time.Second)
+				b.Send(m.Chat, "2")
+				time.Sleep(1 * time.Second)
+				b.Send(m.Chat, "1")
+				time.Sleep(1 * time.Second)
+				b.Send(m.Chat, "Go!")
+			}
 		})
 		b.Handle(&btnNotReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
 			setViewerStatus(c.Data, c.Sender.ID, false, mr, b, readyNotReady)
 		})
 	})
+}
+
+func checkIfWeAreAGo(wpID string) bool {
+	wp := getWatchPartyByID(wpID)
+	for _, v := range wp.Viewers {
+		if !v.Ready {
+			return false
+		}
+	}
+	return true
 }
 
 func getViewerName(v *viewer) string {
@@ -285,7 +306,7 @@ func getInOutMsg(wp *watchParty) string {
 }
 
 func getReadyMsg(wpID string) string {
-	m := "Pause at 3 seconds\nReady status will last for 15 seconds."
+	m := "Pause at 3 seconds\n\nReady status will last for 10 seconds."
 	wp := getWatchPartyByID(wpID)
 	if len(wp.Viewers) == 0 {
 		return m
@@ -317,7 +338,7 @@ func setViewerStatus(wpID string, vID int, ready bool, m *tb.Message, b *tb.Bot,
 }
 
 func revertViewerStatusAfter15Seconds(wpID string, vID int, m *tb.Message, b *tb.Bot, readyNotReady *tb.ReplyMarkup) *time.Timer {
-	timer := time.AfterFunc(time.Second * 15, func() {
+	timer := time.AfterFunc(time.Second * 10, func() {
 		setViewerStatus(wpID, vID, false, m, b, readyNotReady)
 	})
 	return timer
