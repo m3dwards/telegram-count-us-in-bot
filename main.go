@@ -310,7 +310,7 @@ func setViewerStatus(wpID string, vID int, ready bool, m *tb.Message, b *tb.Bot,
 			if ready {
 				vw.Timer = revertViewerStatusAfter15Seconds(wpID, vID, m, b, readyNotReady)
 			}
-			vw.Timer.Stop()
+			//vw.Timer.Stop()
 		}
 	}
 	b.Edit(m, getReadyMsg(wpID), readyNotReady)
