@@ -13,6 +13,7 @@ import (
 type viewer struct {
 	Name     string
 	Username string
+	ID       int
 	Ready    bool
 	Paused   bool
 }
@@ -20,7 +21,7 @@ type viewer struct {
 type watchParty struct {
 	ID          string
 	Name        string
-	Viewers     []viewer
+	Viewers     []*viewer
 	Step        string
 	ChatID      int64
 	OwnerID     int
@@ -30,7 +31,7 @@ type watchParty struct {
 
 type replyID struct {
 	ChatID int64
-	MsgID int
+	MsgID  int
 }
 
 var data []*watchParty
@@ -80,7 +81,6 @@ func main() {
 		btnNext = selector.Data("➡", "next", "1")
 	)
 
-
 	menu.Reply(
 		menu.Row(btnHelp),
 		menu.Row(btnSettings),
@@ -95,7 +95,7 @@ func main() {
 		filmName := m.Text[6:]
 		filmName = strings.TrimSpace(filmName)
 		if len(filmName) == 0 {
-			rep, _ := b.Send(m.Chat, "@" + m.Sender.Username + " enter the film or show name:", replyquery)
+			rep, _ := b.Send(m.Chat, "@"+m.Sender.Username+" enter the film or show name:", replyquery)
 			addNewReplyId(m.Chat.ID, rep.ID)
 			return
 		}
@@ -106,7 +106,7 @@ func main() {
 		if m.ReplyTo != nil && checkReplyIDExists(m.Chat.ID, m.ReplyTo.ID) {
 			deleteReplyID(m.Chat.ID, m.ReplyTo.ID)
 			filmName := strings.TrimSpace(m.Text)
-			if (len(filmName) == 0) {
+			if len(filmName) == 0 {
 				return
 			}
 			handleNewWatchParty(b, filmName, m.Chat.ID, m.Sender.ID, m.Chat)
@@ -196,14 +196,12 @@ func checkReplyIDExists(chatID int64, msgID int) bool {
 	return false
 }
 
-func deleteReplyID(chatID int64, msgID int) bool {
+func deleteReplyID(chatID int64, msgID int) {
 	for i, r := range replyIDs {
 		if chatID == r.ChatID && msgID == r.MsgID {
 			replyIDs = append(replyIDs[:i], replyIDs[i+1:]...)
-			return true
 		}
 	}
-	return false
 }
 
 func getWatchPartyByID(ID string) *watchParty {
@@ -223,7 +221,7 @@ func createNewWatchParty(name string, chatID int64, ownerID int) string {
 }
 
 func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int, chat *tb.Chat) {
-	b.Send(chat, "Who would like to watch " + filmName + "?")
+	b.Send(chat, "Who would like to watch "+filmName+"?")
 	wpID := createNewWatchParty(filmName, chatId, senderID)
 
 	InOrOut := &tb.ReplyMarkup{}
@@ -236,11 +234,15 @@ func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int,
 
 	b.Handle(&btnIn, func(c *tb.Callback) {
 		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
-		b.Edit(m, "The following are in: \n\n Max", InOrOut)
+		wp := getWatchPartyByID(c.Data)
+		addPersonToWP(wp, c.Sender.FirstName, c.Sender.Username, c.Sender.ID)
+		b.Edit(m, getInOutMsg(wp), InOrOut)
 	})
 	b.Handle(&btnOut, func(c *tb.Callback) {
-		b.Respond(c, &tb.CallbackResponse{Text: c.Data})
-		b.Edit(m, "Nobody is in", InOrOut)
+		b.Respond(c, &tb.CallbackResponse{Text: "Removing you from watch party"})
+		wp := getWatchPartyByID(c.Data)
+		removeViewerFromWP(wp, &viewer{ID: c.Sender.ID})
+		b.Edit(m, getInOutMsg(wp), InOrOut)
 	})
 
 	b.Handle(&btnInitiate, func(c *tb.Callback) {
@@ -264,6 +266,45 @@ func handleNewWatchParty(b *tb.Bot, filmName string, chatId int64, senderID int,
 	})
 }
 
+func getInOutMsg(wp *watchParty) string {
+	if len(wp.Viewers) == 0 {
+		return "Nobody is in"
+	}
+	viewers := ""
+	for _, v := range wp.Viewers {
+		if len(v.Name) > 0 {
+			viewers = viewers + v.Name + "\n"
+			continue
+		}
+		viewers = viewers + "@" + v.Username + "\n"
+	}
+	return "The following are in: \n\n" + viewers
+}
+
 func getReadyMsg() string {
-	return  "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds. \n\n Not Ready: \n\n Ready: \n Max"
+	return "Please pause at 3 seconds, when you are ready hit ready. Ready status will last for 30 seconds. \n\n Not Ready: \n\n Ready: \n Max"
+}
+
+func addPersonToWP(wp *watchParty, name string, username string, id int) {
+	v := &viewer{ID: id, Name: name, Username: username}
+	if !viewerExists(wp, v) {
+		wp.Viewers = append(wp.Viewers, v)
+	}
+}
+
+func viewerExists(wp *watchParty, v *viewer) bool {
+	for _, vw := range wp.Viewers {
+		if v.ID == vw.ID {
+			return true
+		}
+	}
+	return false
+}
+
+func removeViewerFromWP(wp *watchParty, v *viewer) {
+	for i, vw := range wp.Viewers {
+		if v.ID == vw.ID {
+			wp.Viewers = append(wp.Viewers[:i], wp.Viewers[i+1:]...)
+		}
+	}
 }
