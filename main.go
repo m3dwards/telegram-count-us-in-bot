@@ -253,6 +253,8 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 
 		b.Handle(&btnReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
+			wp := getWatchPartyByID(c.Data)
+			addPersonToWP(wp, c.Sender.FirstName, c.Sender.Username, c.Sender.ID)
 			setViewerStatus(c.Data, c.Sender.ID, true, mr, b, readyNotReady)
 			if checkIfWeAreAGo(c.Data) {
 				b.Send(m.Chat, "Looks like we are all ready! Starting timer.")
