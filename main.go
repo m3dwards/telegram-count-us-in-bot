@@ -206,7 +206,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb.ReplyMarkup) {
 
 	if !wp.TickerRunning {
-		wp.Ticker = time.NewTicker(5 * time.Second)
+		wp.Ticker = time.NewTicker(1 * time.Second)
 		wp.EveryoneIsReady = make(chan bool)
 		wp.TickerRunning = true
 
@@ -217,8 +217,10 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 					wp.TickerRunning = false
 					return
 				case <-wp.Ticker.C:
-					updateViewerTimeRemaining(wp)
-					b.Edit(m, getReadyMsg(wp), readyNotReady)
+					someoneTimedOut := updateViewerTimeRemaining(wp)
+					if someoneTimedOut {
+						b.Edit(m, getReadyMsg(wp), readyNotReady)
+					}
 				}
 			}
 		}()
@@ -236,13 +238,11 @@ func checkIfWeAreAGo(wpID string) bool {
 }
 
 func getViewerName(v *viewer) string {
-	name := ""
 	if len(v.Name) > 0 {
-		name = v.Name
+		return v.Name
+	} else {
+		return "@" + v.Username
 	}
-	name = "@" + v.Username
-	name += " - (" + strconv.Itoa(v.ReadyTimeLeft) + ")"
-	return name
 }
 
 func getInOutMsg(wp *watchParty) string {
@@ -261,7 +261,7 @@ func getInOutMsg(wp *watchParty) string {
 }
 
 func getReadyMsg(wp *watchParty) string {
-	m := "Pause at 3 seconds\n\nReady status will last for " + strconv.Itoa(countdownDuration) + " seconds."
+	m := "Get paused!\n\nReady status will last for " + strconv.Itoa(countdownDuration) + " seconds."
 	if len(wp.Viewers) == 0 {
 		return m
 	}
@@ -286,12 +286,16 @@ func setViewerTimeRemaining(wp *watchParty, vID int, timeRemaining int) {
 	}
 }
 
-func updateViewerTimeRemaining(wp *watchParty) {
+func updateViewerTimeRemaining(wp *watchParty) (someoneTimedOut bool) {
 	for _, vw := range wp.Viewers {
 			if vw.ReadyTimeLeft > 0 {
-				vw.ReadyTimeLeft -= 5
+				vw.ReadyTimeLeft--
+				if vw.ReadyTimeLeft == 0 {
+					someoneTimedOut = true
+				}
 			}
 	}
+	return someoneTimedOut
 }
 
 func addPersonToWP(wp *watchParty, name string, username string, id int) {
