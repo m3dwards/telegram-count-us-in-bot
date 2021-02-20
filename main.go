@@ -214,7 +214,8 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 					wp.TickerRunning = false
 					return
 				case <-wp.Ticker.C:
-					b.Edit(m, getReadyMsg(wp), readyNotReady)
+					b.Edit(m, "hfeofw")
+					// b.Edit(m, getReadyMsg(wp), readyNotReady)
 				}
 			}
 		}()
