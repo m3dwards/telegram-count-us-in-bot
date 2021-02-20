@@ -55,6 +55,7 @@ func main() {
 	pref := tb.Settings{
 		Token:  token,
 		Poller: webhook,
+		ParseMode: tb.ModeMarkdownV2,
 	}
 
 	b, err := tb.NewBot(pref)
@@ -257,11 +258,11 @@ func getInOutMsg(wp *watchParty) string {
 		}
 		viewers = viewers + "@" + v.Username + "\n"
 	}
-	return "**The following are in:** \n\n" + viewers
+	return "*The following are in:* \n\n" + viewers
 }
 
 func getReadyMsg(wp *watchParty) string {
-	m := "**Get paused!**\n\n__Ready status will last for " + strconv.Itoa(countdownDuration) + " seconds.__"
+	m := "*Get paused!*\n\n_Ready status will last for " + strconv.Itoa(countdownDuration) + " seconds._"
 	if len(wp.Viewers) == 0 {
 		return m
 	}
@@ -274,7 +275,7 @@ func getReadyMsg(wp *watchParty) string {
 		}
 		notReadyViewers = notReadyViewers + getViewerName(v) + "\n"
 	}
-	return m + "\n\n**Not Ready:**\n\n" + notReadyViewers + "\n**Ready:**\n\n" + readyViewers
+	return m + "\n\n*Not Ready:*\n\n" + notReadyViewers + "\n*Ready:*\n\n" + readyViewers
 }
 
 func setViewerTimeRemaining(wp *watchParty, vID int, timeRemaining int) {
