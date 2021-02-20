@@ -243,8 +243,8 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 					return
 				case <-wp.Ticker.C:
 					wp.TotalTicks++
-					if wp.TotalTicks > 10 {
-						b.Edit(m, "Hope everyone had fun watching " + wp.Name)
+					if wp.TotalTicks > 7200 {
+						b.Edit(m, "Timed out trying to start " + wp.Name)
 						wp.TickerRunning = false
 						wp.TotalTicks = 0
 						wp.Ticker.Stop()
