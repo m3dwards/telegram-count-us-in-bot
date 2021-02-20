@@ -243,7 +243,7 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 					return
 				case <-wp.Ticker.C:
 					wp.TotalTicks++
-					if wp.TotalTicks > 7200 {
+					if wp.TotalTicks > 10 {
 						wp.EveryoneIsReady <- true
 						b.Edit(m, "Hope everyone had fun watching " + wp.Name)
 						return
