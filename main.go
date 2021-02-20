@@ -203,7 +203,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb.ReplyMarkup) {
 
 	if !wp.TickerRunning {
-		wp.Ticker = time.NewTicker(1 * time.Second)
+		wp.Ticker = time.NewTicker(5 * time.Second)
 		wp.EveryoneIsReady = make(chan bool)
 		wp.TickerRunning = true
 
@@ -286,7 +286,7 @@ func setViewerTimeRemaining(wp *watchParty, vID int, timeRemaining int) {
 func updateViewerTimeRemaining(wp *watchParty) {
 	for _, vw := range wp.Viewers {
 			if vw.ReadyTimeLeft > 0 {
-				vw.ReadyTimeLeft--
+				vw.ReadyTimeLeft -= 5
 			}
 	}
 }
