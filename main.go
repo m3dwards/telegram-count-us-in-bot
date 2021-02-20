@@ -154,20 +154,20 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 	m, _ := b.Send(chat, "Nobody is in", InOrOut)
 
 	b.Handle(&btnIn, func(c *tb.Callback) {
-		// b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
+		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
 		wp := getWatchPartyByID(c.Data)
 		addPersonToWP(wp, c.Sender.FirstName, c.Sender.Username, c.Sender.ID)
 		b.Edit(m, getInOutMsg(wp), InOrOut)
 	})
 	b.Handle(&btnOut, func(c *tb.Callback) {
-		// b.Respond(c, &tb.CallbackResponse{Text: "Removing you from watch party"})
+		b.Respond(c, &tb.CallbackResponse{Text: "Removing you from watch party"})
 		wp := getWatchPartyByID(c.Data)
 		removeViewerFromWP(wp, &viewer{ID: c.Sender.ID})
 		b.Edit(m, getInOutMsg(wp), InOrOut)
 	})
 
 	b.Handle(&btnInitiate, func(c *tb.Callback) {
-		// b.Respond(c, &tb.CallbackResponse{Text: "Initiating countdown"})
+		b.Respond(c, &tb.CallbackResponse{Text: "Initiating countdown"})
 
 		readyNotReady := &tb.ReplyMarkup{}
 		btnReady := readyNotReady.Data("Ready 🎬", "ready", wpID)
@@ -179,7 +179,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 		startMainTicker(b, mr, wp, readyNotReady)
 
 		b.Handle(&btnReady, func(c *tb.Callback) {
-			// b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
+			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
 			wp := getWatchPartyByID(wpID)
 			addPersonToWP(wp, c.Sender.FirstName, c.Sender.Username, c.Sender.ID)
 			setViewerTimeRemaining(wp, c.Sender.ID, countdownDuration)
@@ -196,7 +196,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 			}
 		})
 		b.Handle(&btnNotReady, func(c *tb.Callback) {
-			// b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
+			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
 			wp := getWatchPartyByID(c.Data)
 			setViewerTimeRemaining(wp, c.Sender.ID, 0)
 			b.Edit(mr, getReadyMsg(wp), readyNotReady)
