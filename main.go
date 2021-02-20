@@ -3,26 +3,30 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+
 	// "strconv"
 	"github.com/pborman/uuid"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 type viewer struct {
-	Name     string
-	Username string
-	ID       int
-	Ready    bool
-	Timer *time.Timer
+	Name          string
+	Username      string
+	ID            int
+	ReadyTimeLeft int
 }
 
 type watchParty struct {
-	ID      string
-	Name    string
-	Viewers []*viewer
-	OwnerID int
+	ID              string
+	Name            string
+	Viewers         []*viewer
+	OwnerID         int
+	EveryoneIsReady chan bool
+	Ticker          *time.Ticker
+	TickerRunning   bool
 }
 
 type replyID struct {
@@ -32,6 +36,8 @@ type replyID struct {
 
 var data []*watchParty
 var replyIDs []*replyID
+
+const countdownDuration = 15
 
 func main() {
 
@@ -55,35 +61,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	var (
-		// Universal markup builders.
-		menu     = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-		selector = &tb.ReplyMarkup{}
-
-		// Reply buttons.
-		btnHelp     = menu.Text("ℹ Help")
-		btnSettings = menu.Text("⚙ Settings")
-
-		// Inline buttons.
-		//
-		// Pressing it will cause the client to
-		// send the bot a callback.
-		//
-		// Make sure Unique stays unique as per button kind,
-		// as it has to be for callback routing to work.
-		//
-		btnPrev = selector.Data("⬅", "prev", "1")
-		btnNext = selector.Data("➡", "next", "1")
-	)
-
-	menu.Reply(
-		menu.Row(btnHelp),
-		menu.Row(btnSettings),
-	)
-	selector.Inline(
-		selector.Row(btnPrev, btnNext),
-	)
 
 	replyquery := &tb.ReplyMarkup{ForceReply: true, Selective: true}
 
@@ -109,74 +86,21 @@ func main() {
 		}
 	})
 
-	// On reply button pressed (message)
-	b.Handle(&btnHelp, func(m *tb.Message) {})
-
-	// On inline button pressed (callback)
-	b.Handle(&btnPrev, func(c *tb.Callback) {
-		// ...
-		// Always respond!
-		b.Respond(c, &tb.CallbackResponse{Text: "Previous"})
-	})
-
-	b.Handle(&btnNext, func(c *tb.Callback) {
-		// ...
-		// Always respond!
-		b.Respond(c, &tb.CallbackResponse{Text: "Next"})
-	})
-
 	b.Handle("/count", func(m *tb.Message) {
-		b.Send(m.Chat, "3")
-		time.Sleep(1 * time.Second)
-		b.Send(m.Chat, "2")
-		time.Sleep(1 * time.Second)
-		b.Send(m.Chat, "1")
-		time.Sleep(1 * time.Second)
-		b.Send(m.Chat, "Go!")
-	})
-
-	b.Handle("/playstation", func(m *tb.Message) {
-		b.Send(m.Chat, "P")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "L")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "A")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "Y")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "S")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "T")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "A")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "T")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "I")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "O")
-		time.Sleep(150 * time.Millisecond)
-		b.Send(m.Chat, "N")
-		time.Sleep(150 * time.Millisecond)
-	})
-
-	b.Handle("/llama", func(m *tb.Message) {
-		a := &tb.Photo{File: tb.FromURL("https://pbs.twimg.com/profile_images/378800000802823295/fa4f4104d718899ea49f3a507c7f6034_400x400.jpeg")}
-		if err != nil {
-			return
-		}
-		b.Send(m.Chat, a)
-	})
-
-	b.Handle("/randomllama", func(m *tb.Message) {
-		a := &tb.Photo{File: tb.FromURL("https://source.unsplash.com/800x600?llama")}
-		if err != nil {
-			return
-		}
-		b.Send(m.Chat, a)
+		sendCountdown(b, m.Chat)
 	})
 
 	b.Start()
+}
+
+func sendCountdown(b *tb.Bot, chat *tb.Chat) {
+	b.Send(chat, "3")
+	time.Sleep(1 * time.Second)
+	b.Send(chat, "2")
+	time.Sleep(1 * time.Second)
+	b.Send(chat, "1")
+	time.Sleep(1 * time.Second)
+	b.Send(chat, "Go!")
 }
 
 func addNewReplyId(chatID int64, msgID int) {
@@ -249,36 +173,58 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 		btnNotReady := readyNotReady.Data("Not ready ❌", "notready", wpID)
 		readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
 
-		mr, _ := b.Send(chat, getReadyMsg(wpID), readyNotReady)
+		wp := getWatchPartyByID(wpID)
+		mr, _ := b.Send(chat, getReadyMsg(wp), readyNotReady)
+		startMainTicker(b, mr, wp, readyNotReady)
 
 		b.Handle(&btnReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are ready!"})
-			wp := getWatchPartyByID(c.Data)
+			wp := getWatchPartyByID(wpID)
 			addPersonToWP(wp, c.Sender.FirstName, c.Sender.Username, c.Sender.ID)
-			setViewerStatus(c.Data, c.Sender.ID, true, mr, b, readyNotReady)
+			setViewerTimeRemaining(wp, c.Sender.ID, countdownDuration)
 			if checkIfWeAreAGo(c.Data) {
-				b.Send(m.Chat, "Looks like we are all ready! Starting timer.")
-				time.Sleep(2 * time.Second)
-				b.Send(m.Chat, "3")
-				time.Sleep(1 * time.Second)
-				b.Send(m.Chat, "2")
-				time.Sleep(1 * time.Second)
-				b.Send(m.Chat, "1")
-				time.Sleep(1 * time.Second)
-				b.Send(m.Chat, "Go!")
+				wp.Ticker.Stop()
+				wp.EveryoneIsReady <- true
+				go func() {
+					b.Send(m.Chat, "Looks like we are all ready! Starting count.")
+					time.Sleep(2 * time.Second)
+					sendCountdown(b, m.Chat)
+				}()
 			}
 		})
 		b.Handle(&btnNotReady, func(c *tb.Callback) {
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
-			setViewerStatus(c.Data, c.Sender.ID, false, mr, b, readyNotReady)
+			wp := getWatchPartyByID(c.Data)
+			setViewerTimeRemaining(wp, c.Sender.ID, 0)
 		})
 	})
+}
+
+func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb.ReplyMarkup) {
+
+	if !wp.TickerRunning {
+		wp.Ticker = time.NewTicker(1 * time.Second)
+		wp.EveryoneIsReady = make(chan bool)
+		wp.TickerRunning = true
+
+		go func() {
+			for {
+				select {
+				case <-wp.EveryoneIsReady:
+					wp.TickerRunning = false
+					return
+				case <-wp.Ticker.C:
+					b.Edit(m, getReadyMsg(wp), readyNotReady)
+				}
+			}
+		}()
+	}
 }
 
 func checkIfWeAreAGo(wpID string) bool {
 	wp := getWatchPartyByID(wpID)
 	for _, v := range wp.Viewers {
-		if !v.Ready {
+		if v.ReadyTimeLeft == 0 {
 			return false
 		}
 	}
@@ -286,10 +232,13 @@ func checkIfWeAreAGo(wpID string) bool {
 }
 
 func getViewerName(v *viewer) string {
+	name := ""
 	if len(v.Name) > 0 {
-		return v.Name
+		name = v.Name
 	}
-	return "@" + v.Username
+	name = "@" + v.Username
+	name += " - (" + strconv.Itoa(v.ReadyTimeLeft) + ")"
+	return name
 }
 
 func getInOutMsg(wp *watchParty) string {
@@ -307,16 +256,15 @@ func getInOutMsg(wp *watchParty) string {
 	return "The following are in: \n\n" + viewers
 }
 
-func getReadyMsg(wpID string) string {
-	m := "Pause at 3 seconds\n\nReady status will last for 10 seconds."
-	wp := getWatchPartyByID(wpID)
+func getReadyMsg(wp *watchParty) string {
+	m := "Pause at 3 seconds\n\nReady status will last for " + strconv.Itoa(countdownDuration) + " seconds."
 	if len(wp.Viewers) == 0 {
 		return m
 	}
 	readyViewers := ""
 	notReadyViewers := ""
 	for _, v := range wp.Viewers {
-		if v.Ready {
+		if v.ReadyTimeLeft > 0 {
 			readyViewers = readyViewers + getViewerName(v) + "\n"
 			continue
 		}
@@ -325,25 +273,24 @@ func getReadyMsg(wpID string) string {
 	return m + "\n\nNot Ready:\n\n" + notReadyViewers + "\nReady:\n\n" + readyViewers
 }
 
-func setViewerStatus(wpID string, vID int, ready bool, m *tb.Message, b *tb.Bot, readyNotReady *tb.ReplyMarkup) {
-	wp := getWatchPartyByID(wpID)
+func setViewerTimeRemaining(wp *watchParty, vID int, timeRemaining int) {
 	for _, vw := range wp.Viewers {
 		if vID == vw.ID {
-			vw.Ready = ready
-			if ready {
-				vw.Timer = revertViewerStatusAfter15Seconds(wpID, vID, m, b, readyNotReady)
-			}
-			//vw.Timer.Stop()
+			vw.ReadyTimeLeft = timeRemaining
+			return
 		}
 	}
-	b.Edit(m, getReadyMsg(wpID), readyNotReady)
 }
 
-func revertViewerStatusAfter15Seconds(wpID string, vID int, m *tb.Message, b *tb.Bot, readyNotReady *tb.ReplyMarkup) *time.Timer {
-	timer := time.AfterFunc(time.Second * 10, func() {
-		setViewerStatus(wpID, vID, false, m, b, readyNotReady)
-	})
-	return timer
+func updateViewerTimeRemaining(wp *watchParty, vID int) {
+	for _, vw := range wp.Viewers {
+		if vID == vw.ID {
+			if vw.ReadyTimeLeft > 0 {
+				vw.ReadyTimeLeft--
+			}
+			return
+		}
+	}
 }
 
 func addPersonToWP(wp *watchParty, name string, username string, id int) {
