@@ -246,6 +246,7 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 					if wp.TotalTicks > 10 {
 						b.Edit(m, "Hope everyone had fun watching " + wp.Name)
 						wp.TickerRunning = false
+						wp.TotalTicks = 0
 						wp.Ticker.Stop()
 						wp.EveryoneIsReady <- true
 					}
