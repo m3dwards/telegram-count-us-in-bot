@@ -245,8 +245,8 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 					wp.TotalTicks++
 					if wp.TotalTicks > 10 {
 						b.Edit(m, "Hope everyone had fun watching " + wp.Name)
+						wp.Ticker.Stop()
 						wp.EveryoneIsReady <- true
-						return
 					}
 					someoneTimedOut := updateViewerTimeRemaining(wp)
 					if someoneTimedOut {
