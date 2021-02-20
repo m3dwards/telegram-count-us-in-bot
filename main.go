@@ -214,8 +214,8 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 					wp.TickerRunning = false
 					return
 				case <-wp.Ticker.C:
-					b.Edit(m, "hfeofw")
-					// b.Edit(m, getReadyMsg(wp), readyNotReady)
+					updateViewerTimeRemaining(wp)
+					b.Edit(m, getReadyMsg(wp), readyNotReady)
 				}
 			}
 		}()
@@ -283,14 +283,11 @@ func setViewerTimeRemaining(wp *watchParty, vID int, timeRemaining int) {
 	}
 }
 
-func updateViewerTimeRemaining(wp *watchParty, vID int) {
+func updateViewerTimeRemaining(wp *watchParty) {
 	for _, vw := range wp.Viewers {
-		if vID == vw.ID {
 			if vw.ReadyTimeLeft > 0 {
 				vw.ReadyTimeLeft--
 			}
-			return
-		}
 	}
 }
 
