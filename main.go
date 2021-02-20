@@ -175,7 +175,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 	btnInitiate := InOrOut.Data("Start countdown ▶️", "initiate", wpID)
 	InOrOut.Inline(InOrOut.Row(btnIn, btnOut), InOrOut.Row(btnInitiate))
 
-	m, _ := b.Send(chat, "Nobody is in", InOrOut)
+	m, _ := b.Send(chat, " *Nobody is in* ", InOrOut)
 
 	b.Handle(&btnIn, func(c *tb.Callback) {
 		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
