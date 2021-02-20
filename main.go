@@ -27,6 +27,7 @@ type watchParty struct {
 	EveryoneIsReady chan bool
 	Ticker          *time.Ticker
 	TickerRunning   bool
+	TotalTicks      int
 }
 
 type replyID struct {
@@ -53,8 +54,8 @@ func main() {
 	}
 
 	pref := tb.Settings{
-		Token:  token,
-		Poller: webhook,
+		Token:     token,
+		Poller:    webhook,
 		ParseMode: tb.ModeMarkdownV2,
 	}
 
@@ -73,6 +74,7 @@ func main() {
 			addNewReplyId(m.Chat.ID, rep.ID)
 			return
 		}
+		filmName = parseFilmName(filmName)
 		handleNewWatchParty(b, filmName, m.Sender.ID, m.Chat)
 	})
 
@@ -83,6 +85,7 @@ func main() {
 			if len(filmName) == 0 {
 				return
 			}
+			filmName = parseFilmName(filmName)
 			handleNewWatchParty(b, filmName, m.Sender.ID, m.Chat)
 		}
 	})
@@ -139,6 +142,27 @@ func createNewWatchParty(name string, ownerID int) string {
 	wp := &watchParty{ID: id, Name: name, OwnerID: ownerID}
 	data = append(data, wp)
 	return id
+}
+
+func parseFilmName(name string) string {
+	name = strings.ReplaceAll(name, "_", "\\_")
+	name = strings.ReplaceAll(name, "*", "\\*")
+	name = strings.ReplaceAll(name, "[", "\\[")
+	name = strings.ReplaceAll(name, "]", "\\]")
+	name = strings.ReplaceAll(name, "(", "\\(")
+	name = strings.ReplaceAll(name, ")", "\\)")
+	name = strings.ReplaceAll(name, "~", "\\~")
+	name = strings.ReplaceAll(name, ">", "\\>")
+	name = strings.ReplaceAll(name, "#", "\\#")
+	name = strings.ReplaceAll(name, "+", "\\+")
+	name = strings.ReplaceAll(name, "-", "\\-")
+	name = strings.ReplaceAll(name, "=", "\\=")
+	name = strings.ReplaceAll(name, "|", "\\|")
+	name = strings.ReplaceAll(name, "{", "\\{")
+	name = strings.ReplaceAll(name, "}", "\\}")
+	name = strings.ReplaceAll(name, ".", "\\.")
+	name = strings.ReplaceAll(name, "!", "\\!")
+	return name
 }
 
 func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat) {
@@ -218,6 +242,12 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 					wp.TickerRunning = false
 					return
 				case <-wp.Ticker.C:
+					wp.TotalTicks++
+					if wp.TotalTicks > 7200 {
+						wp.EveryoneIsReady <- true
+						b.Edit(m, "Hope everyone had fun watching " + wp.Name)
+						return
+					}
 					someoneTimedOut := updateViewerTimeRemaining(wp)
 					if someoneTimedOut {
 						b.Edit(m, getReadyMsg(wp), readyNotReady)
@@ -289,12 +319,12 @@ func setViewerTimeRemaining(wp *watchParty, vID int, timeRemaining int) {
 
 func updateViewerTimeRemaining(wp *watchParty) (someoneTimedOut bool) {
 	for _, vw := range wp.Viewers {
-			if vw.ReadyTimeLeft > 0 {
-				vw.ReadyTimeLeft--
-				if vw.ReadyTimeLeft == 0 {
-					someoneTimedOut = true
-				}
+		if vw.ReadyTimeLeft > 0 {
+			vw.ReadyTimeLeft--
+			if vw.ReadyTimeLeft == 0 {
+				someoneTimedOut = true
 			}
+		}
 	}
 	return someoneTimedOut
 }
