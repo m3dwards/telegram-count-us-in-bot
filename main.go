@@ -175,8 +175,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 		readyNotReady.Inline(InOrOut.Row(btnReady, btnNotReady))
 
 		wp := getWatchPartyByID(wpID)
-		mr, _ := b.Send(chat, "why is this broken?", readyNotReady)
-		mr, _ = b.Send(chat, getReadyMsg(wp), readyNotReady)
+		mr, _ := b.Send(chat, getReadyMsg(wp), readyNotReady)
 		startMainTicker(b, mr, wp, readyNotReady)
 
 		b.Handle(&btnReady, func(c *tb.Callback) {
