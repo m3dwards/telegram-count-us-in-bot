@@ -186,6 +186,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 			if checkIfWeAreAGo(c.Data) {
 				wp.Ticker.Stop()
 				wp.EveryoneIsReady <- true
+				b.Edit(mr, getReadyMsg(wp), readyNotReady)
 				go func() {
 					b.Send(m.Chat, "Looks like we are all ready! Starting count.")
 					time.Sleep(2 * time.Second)
