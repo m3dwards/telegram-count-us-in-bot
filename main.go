@@ -257,11 +257,11 @@ func getInOutMsg(wp *watchParty) string {
 		}
 		viewers = viewers + "@" + v.Username + "\n"
 	}
-	return "The following are in: \n\n" + viewers
+	return "**The following are in:** \n\n" + viewers
 }
 
 func getReadyMsg(wp *watchParty) string {
-	m := "Get paused!\n\nReady status will last for " + strconv.Itoa(countdownDuration) + " seconds."
+	m := "**Get paused!**\n\n__Ready status will last for " + strconv.Itoa(countdownDuration) + " seconds.__"
 	if len(wp.Viewers) == 0 {
 		return m
 	}
@@ -274,7 +274,7 @@ func getReadyMsg(wp *watchParty) string {
 		}
 		notReadyViewers = notReadyViewers + getViewerName(v) + "\n"
 	}
-	return m + "\n\nNot Ready:\n\n" + notReadyViewers + "\nReady:\n\n" + readyViewers
+	return m + "\n\n**Not Ready:**\n\n" + notReadyViewers + "\n**Ready:**\n\n" + readyViewers
 }
 
 func setViewerTimeRemaining(wp *watchParty, vID int, timeRemaining int) {
