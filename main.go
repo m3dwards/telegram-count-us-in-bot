@@ -182,6 +182,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 			wp := getWatchPartyByID(wpID)
 			addPersonToWP(wp, c.Sender.FirstName, c.Sender.Username, c.Sender.ID)
 			setViewerTimeRemaining(wp, c.Sender.ID, countdownDuration)
+			b.Edit(mr, getReadyMsg(wp), readyNotReady)
 			if checkIfWeAreAGo(c.Data) {
 				wp.Ticker.Stop()
 				wp.EveryoneIsReady <- true
@@ -196,6 +197,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 			b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are not ready"})
 			wp := getWatchPartyByID(c.Data)
 			setViewerTimeRemaining(wp, c.Sender.ID, 0)
+			b.Edit(mr, getReadyMsg(wp), readyNotReady)
 		})
 	})
 }
