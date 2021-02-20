@@ -248,7 +248,7 @@ func getViewerName(v *viewer) string {
 
 func getInOutMsg(wp *watchParty) string {
 	if len(wp.Viewers) == 0 {
-		return "*Nobody is in*"
+		return " *Nobody is in* "
 	}
 	viewers := ""
 	for _, v := range wp.Viewers {
@@ -262,8 +262,7 @@ func getInOutMsg(wp *watchParty) string {
 }
 
 func getReadyMsg(wp *watchParty) string {
-	m := "*Get paused!* _Ready status will last for " + strconv.Itoa(countdownDuration) + " seconds._"
-	return "_Ready status will last for_"
+	m := "*Get paused\\!* _Ready status will last for " + strconv.Itoa(countdownDuration) + " seconds_"
 	if len(wp.Viewers) == 0 {
 		return m
 	}
