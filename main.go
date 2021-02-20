@@ -262,7 +262,7 @@ func getInOutMsg(wp *watchParty) string {
 }
 
 func getReadyMsg(wp *watchParty) string {
-	m := "*Get paused!*\n\n_Ready status will last for " + strconv.Itoa(countdownDuration) + " seconds._"
+	m := "*Get paused!* \n\n _Ready status will last for " + strconv.Itoa(countdownDuration) + " seconds._"
 	return m
 	if len(wp.Viewers) == 0 {
 		return m
