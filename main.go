@@ -67,6 +67,7 @@ func main() {
 	replyquery := &tb.ReplyMarkup{ForceReply: true, Selective: true}
 
 	b.Handle("/watch", func(m *tb.Message) {
+		log.Println("Someone wants to watch")
 		filmName := m.Text[6:]
 		filmName = strings.TrimSpace(filmName)
 		if len(filmName) == 0 {
@@ -178,6 +179,7 @@ func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat
 	m, _ := b.Send(chat, " *Nobody is in* ", InOrOut)
 
 	b.Handle(&btnIn, func(c *tb.Callback) {
+		log.Println("Someone wants in, let them watch")
 		b.Respond(c, &tb.CallbackResponse{Text: "Noted that you are in!"})
 		wp := getWatchPartyByID(c.Data)
 		addPersonToWP(wp, c.Sender.FirstName, c.Sender.Username, c.Sender.ID)
