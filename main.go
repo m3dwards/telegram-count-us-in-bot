@@ -67,7 +67,7 @@ func main() {
 	replyquery := &tb.ReplyMarkup{ForceReply: true, Selective: true}
 
 	b.Handle("/watch", func(m *tb.Message) {
-		log.Println("Someone wants to watch")
+		log.Println("Someone wants to watch a show")
 		filmName := m.Text[6:]
 		filmName = strings.TrimSpace(filmName)
 		if len(filmName) == 0 {
