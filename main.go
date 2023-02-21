@@ -40,6 +40,9 @@ var replyIDs []*replyID
 
 const countdownDuration = 15
 
+	func escape(name string) string {
+		return strings.Replace(name, "_", "\_")
+	}
 func main() {
 
 	var (
@@ -64,6 +67,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	
 	replyquery := &tb.ReplyMarkup{ForceReply: true, Selective: true}
 
 	b.Handle("/watch", func(m *tb.Message) {
@@ -74,7 +78,7 @@ func main() {
 		log.Printf("chat %v\n", m.Chat)
 		log.Printf("username %v\n", m.Sender.Username)
 		if len(filmName) == 0 {
-			rep, err := b.Send(m.Chat, ""+m.Sender.Username+" enter the film or show name:", replyquery)
+			rep, err := b.Send(m.Chat, "@"+escape(m.Sender.Username)+" enter the film or show name:", replyquery)
 			if err != nil {
 				log.Printf("%v", err)
 				return
