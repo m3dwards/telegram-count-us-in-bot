@@ -40,9 +40,9 @@ var replyIDs []*replyID
 
 const countdownDuration = 15
 
-	func escape(name string) string {
-		return strings.Replace(name, "_", "\_")
-	}
+func escape(name string) string {
+	return strings.Replace(name, "_", "\\_", -1)
+}
 func main() {
 
 	var (
@@ -67,7 +67,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	
 	replyquery := &tb.ReplyMarkup{ForceReply: true, Selective: true}
 
 	b.Handle("/watch", func(m *tb.Message) {
