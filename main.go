@@ -15,7 +15,7 @@ import (
 type viewer struct {
 	Name          string
 	Username      string
-	ID            int
+	ID            int64
 	ReadyTimeLeft int
 }
 
@@ -23,7 +23,7 @@ type watchParty struct {
 	ID              string
 	Name            string
 	Viewers         []*viewer
-	OwnerID         int
+	OwnerID         int64
 	EveryoneIsReady chan bool
 	Ticker          *time.Ticker
 	TickerRunning   bool
@@ -138,7 +138,7 @@ func getWatchPartyByID(ID string) *watchParty {
 	return nil
 }
 
-func createNewWatchParty(name string, ownerID int) string {
+func createNewWatchParty(name string, ownerID int64) string {
 	id := uuid.New()
 	wp := &watchParty{ID: id, Name: name, OwnerID: ownerID}
 	data = append(data, wp)
@@ -166,7 +166,7 @@ func parseFilmName(name string) string {
 	return name
 }
 
-func handleNewWatchParty(b *tb.Bot, filmName string, senderID int, chat *tb.Chat) {
+func handleNewWatchParty(b *tb.Bot, filmName string, senderID int64, chat *tb.Chat) {
 	b.Send(chat, "Who would like to watch "+filmName+"?")
 	wpID := createNewWatchParty(filmName, senderID)
 
@@ -246,7 +246,7 @@ func startMainTicker(b *tb.Bot, m *tb.Message, wp *watchParty, readyNotReady *tb
 				case <-wp.Ticker.C:
 					wp.TotalTicks++
 					if wp.TotalTicks > 7200 {
-						b.Edit(m, "Timed out trying to start " + wp.Name)
+						b.Edit(m, "Timed out trying to start "+wp.Name)
 						wp.TickerRunning = false
 						wp.TotalTicks = 0
 						wp.Ticker.Stop()
@@ -312,7 +312,7 @@ func getReadyMsg(wp *watchParty) string {
 	return m + "\n\n*Not Ready:*\n\n" + notReadyViewers + "\n*Ready:*\n\n" + readyViewers
 }
 
-func setViewerTimeRemaining(wp *watchParty, vID int, timeRemaining int) {
+func setViewerTimeRemaining(wp *watchParty, vID int64, timeRemaining int) {
 	for _, vw := range wp.Viewers {
 		if vID == vw.ID {
 			vw.ReadyTimeLeft = timeRemaining
@@ -333,7 +333,7 @@ func updateViewerTimeRemaining(wp *watchParty) (someoneTimedOut bool) {
 	return someoneTimedOut
 }
 
-func addPersonToWP(wp *watchParty, name string, username string, id int) {
+func addPersonToWP(wp *watchParty, name string, username string, id int64) {
 	v := &viewer{ID: id, Name: name, Username: username}
 	if !viewerExists(wp, v) {
 		wp.Viewers = append(wp.Viewers, v)
