@@ -43,6 +43,10 @@ const countdownDuration = 15
 func escape(name string) string {
 	return strings.Replace(name, "_", "\\_", -1)
 }
+func stripCommand(command string) string {
+	command = strings.Replace(command, "@count_us_in_bot", "", -1)
+	return strings.Replace(command, "/count", "", -1)
+}
 func main() {
 
 	var (
@@ -71,7 +75,7 @@ func main() {
 
 	b.Handle("/watch", func(m *tb.Message) {
 		log.Println("Someone wants to watch a show")
-		filmName := m.Text[6:]
+		filmName := stripCommand(m.Text)
 		filmName = strings.TrimSpace(filmName)
 		log.Println("got to here")
 		log.Printf("chat %v\n", m.Chat)
