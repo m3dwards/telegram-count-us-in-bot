@@ -71,6 +71,8 @@ func main() {
 		filmName := m.Text[6:]
 		filmName = strings.TrimSpace(filmName)
 		log.Println("got to here")
+		log.Printf("chat %v\n", m.Chat)
+		log.Printf("username %v\n", m.Sender.Username)
 		if len(filmName) == 0 {
 			rep, _ := b.Send(m.Chat, "@"+m.Sender.Username+" enter the film or show name:", replyquery)
 			addNewReplyId(m.Chat.ID, rep.ID)
