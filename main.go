@@ -45,7 +45,7 @@ func escape(name string) string {
 }
 func stripCommand(command string) string {
 	command = strings.Replace(command, "@count_us_in_bot", "", -1)
-	return strings.Replace(command, "/count", "", -1)
+	return strings.Replace(command, "/watch", "", -1)
 }
 func main() {
 
